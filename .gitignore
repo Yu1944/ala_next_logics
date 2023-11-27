@@ -1,0 +1,55 @@
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Java
+*.class
+target/
+
+# Visual Studio Code
+.vscode/
+
+# IntelliJ
+.idea/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Compiled files
+*.o
+*.out
+*.exe
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Local configuration files
+config.local
+
+# Environment files
+.env
+.env.local
+
+# Yarn
+yarn.lock
+
+# npm
+package-lock.json
+
+# Custom entries
+my-custom-file.txt
