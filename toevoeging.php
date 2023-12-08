@@ -77,10 +77,14 @@ class User {
                 echo "<ul>";
                 foreach ($projects as $project) {
                     echo "<li>Project ID: " . $project['ProjectID'] . ", Name: " . $project['Title'] . 
-                    ", Start Datum:" . $project['StartDT'] .", Eind Datum:" . $project['EndDT'] .
-                    ", Actuel:" . $project['Actual'].", users:" . $project['Name'] .
-                    ", Max Hours:" . $project['MaxHours'] .", Description:" .$project['Description'] ."</li>";
-                }
+                        ", Start Datum:" . $project['StartDT'] .", Eind Datum:" . $project['EndDT'] .
+                        ", Actuel:" . $project['Actual'].", users:" . $project['Name'] .
+                        ", Max Hours:" . $project['MaxHours'] .", Description:" .$project['Description'] .
+                        " <form action='edit.php' method='post'>
+                            <input type='hidden' name='project_id' value='" . $project['ProjectID'] . "'>
+                            <button type='submit'>Edit</button>
+                          </form></li>";
+                }                
                 echo "</ul>";
             } else {
                 echo "No projects found.";
@@ -145,14 +149,85 @@ class User {
             }
         }
     }
+    public function displaySelectedProject($projectId) {
+        $sql = "SELECT 
+            projectdata.*, projects.*, users.*,
+            projects.title AS project_name, 
+            users.Name AS user_name
+        FROM 
+            projectdata 
+        JOIN 
+            projects ON projectdata.ProjectID = projects.ID
+        JOIN 
+            users ON projectdata.UserID = users.ID
+        WHERE 
+            projects.ID = :projectId";
+    
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
+            $stmt->execute();
+            $selectedProject = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            return $selectedProject;
+        } catch (Exception $e) {
+            // Handle exceptions (e.g., log or display an error message)
+            echo "Error: " . $e->getMessage();
+        }
+    }
     
     
     
 
     private function updateProject($projectId) {
-        // Logic to update the project
-        // This method should only be accessible by managers
+        // Check if the form is submitted
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submitUpdate'])) {
+            // Update the project
+            // echo $_POST['title'];
+            $sql = "UPDATE projectdata
+            JOIN projects ON projectdata.ProjectID = projects.ID
+            JOIN users ON projectdata.UserID = users.ID
+            SET 
+                projects.Title = :newTitle,
+                projects.StartDT = :newStartDate,
+                projects.EndDT = :newEndDate,
+                projects.Active = :newActive,
+                projects.Actual = :newActuel,
+                projects.Code = :newCode,
+                projects.MaxHours = :newMaxHours,
+                projectdata.Description = :newDescription,
+                projectdata.EntryDT = :newStartDate,
+                projectdata.WorkDT = :newEndDate
+            WHERE
+                projectdata.ProjectID = :projectId";
+    
+  
+            try {
+                $stmt = $this->conn->prepare($sql);
+                // Bind parameters using $_POST values
+                $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
+                $stmt->bindParam(':newTitle', $_POST['title'], PDO::PARAM_STR);
+                $stmt->bindParam(':newStartDate', $_POST['start_date'], PDO::PARAM_STR);
+                $stmt->bindParam(':newEndDate', $_POST['end_date'], PDO::PARAM_STR);
+                $stmt->bindParam(':newCode', $_POST['code'], PDO::PARAM_STR);
+                $stmt->bindParam(':newActive', $_POST['active'], PDO::PARAM_STR);
+                $stmt->bindParam(':newActuel', $_POST['actuel'], PDO::PARAM_STR);
+                $stmt->bindParam(':newUserID', $_POST['user_id'], PDO::PARAM_STR);
+                $stmt->bindParam(':newMaxHours', $_POST['maxHours'], PDO::PARAM_STR);
+                $stmt->bindParam(':newDescription', $_POST['description'], PDO::PARAM_STR);
+            
+                $stmt->execute();
+            
+                echo "Project updated successfully!";
+                // header("Location: overzicht.php"); 
+                exit();
+            } catch (Exception $e) {
+                // Handle exceptions (e.g., log or display an error message)
+                echo "Error: " . $e->getMessage();
+            }
+        }
     }
+    
 
     private function showEmployeeDashboard() {
         // Logic to display employee dashboard or project list
